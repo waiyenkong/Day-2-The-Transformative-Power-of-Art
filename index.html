@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Check-In</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      margin: 1rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>How would you like to check in?</h1>
+
+  <button onclick="window.location.href='scan.html'">✅ With QR Code</button>
+  <button onclick="window.location.href='https://docs.google.com/forms/d/e/1FAIpQLSdXPwBTOMopCRdPNLM3rvWEnqawH4jM74sNKlaPfY3JVUmijw/viewform'">✍️ Without QR Code</button>
+
+</body>
+</html>
