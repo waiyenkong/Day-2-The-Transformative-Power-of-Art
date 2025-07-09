@@ -69,25 +69,30 @@
 <body>
   <h2>Scan your QR code</h2>
   <div id="reader"></div>
-  <script>
+<script>
   const html5QrCode = new Html5Qrcode("reader");
 
   function onScanSuccess(decodedText, decodedResult) {
     console.log("✅ QR Code Scanned:", decodedText);
-    alert("Scanned: " + decodedText); // For Safari testing
+    alert("Scanned: " + decodedText);
     window.location.href = decodedText;
   }
 
   function onScanFailure(error) {
-    // Optional: comment this out if it floods the console
+    // Comment this out if it floods console
     // console.log("Scan error:", error);
   }
 
   Html5Qrcode.getCameras().then(devices => {
     if (devices && devices.length) {
-      const cameraId = devices[0].id;
+      // Try to find back camera (usually contains 'back' or 'rear')
+      let backCamera = devices.find(device => device.label.toLowerCase().includes("back") || device.label.toLowerCase().includes("rear"));
+
+      // Fallback to first device
+      const cameraId = backCamera ? backCamera.id : devices[0].id;
+
       html5QrCode.start(
-        { facingMode: "environment" }, // Prefer rear camera
+        cameraId,
         {
           fps: 10,
           qrbox: 250
@@ -106,6 +111,7 @@
     alert("Camera access error: " + err);
   });
 </script>
+
 
 
 </body>
