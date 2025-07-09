@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
   <title>Scan QR to Check In</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
@@ -15,30 +15,34 @@
     body {
       font-family: sans-serif;
       text-align: center;
-      height: 100vh;
-      width: 100vw;
       position: relative;
     }
     #reader {
-      position: fixed;
-      top: 0;
-      left: 0;
       width: 100vw;
       height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #000;
+      position: relative;
       z-index: 1;
     }
     #reader video {
-      width: 100vw !important;
-      height: 100vh !important;
+      width: 100% !important;
+      height: 100% !important;
       object-fit: cover;
+    }
+    h2 {
       position: absolute;
-      top: 0;
+      top: 24px;
       left: 0;
-      z-index: 1;
+      width: 100%;
+      color: #fff;
+      z-index: 10;
+      margin: 0;
+      text-shadow: 0 0 10px #000;
+      font-size: 2em;
+      pointer-events: none;
     }
     .qr-corner {
       position: absolute;
@@ -52,18 +56,6 @@
       height: 100%;
       display: block;
     }
-    h2 {
-      position: absolute;
-      top: 24px;
-      left: 0;
-      width: 100vw;
-      color: #fff;
-      z-index: 10;
-      margin: 0;
-      text-shadow: 0 0 10px #000;
-      font-size: 2em;
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
@@ -71,40 +63,42 @@
   <div id="reader"></div>
   <script>
     function onScanSuccess(decodedText) {
+      console.log("Scanned:", decodedText);
       window.location.href = decodedText;
     }
 
     function getQrBoxSize() {
-      // Use 80vw or 80vh (whichever is smaller) for a square box
-      let size = Math.floor(Math.min(window.innerWidth, window.innerHeight) * 0.8);
+      const size = Math.floor(Math.min(window.innerWidth, window.innerHeight) * 0.8);
       return { width: size, height: size };
     }
 
-    let { width: qrboxWidth, height: qrboxHeight } = getQrBoxSize();
-
+    const { width: qrboxWidth, height: qrboxHeight } = getQrBoxSize();
     const html5QrCode = new Html5Qrcode("reader");
+
     html5QrCode.start(
-      { facingMode: "environment" },
+      { facingMode: "environment" }, // fallback below if not available
       {
         fps: 10,
         qrbox: { width: qrboxWidth, height: qrboxHeight }
       },
-      onScanSuccess
+      onScanSuccess,
+      (errorMsg) => {
+        // Error while scanning (e.g., no QR code in view)
+        console.warn("QR scan error:", errorMsg);
+      }
     ).then(() => {
-      // Add corner borders for the qrbox
       const reader = document.getElementById('reader');
-      const cornerSize = 100; // Make corners longer
-      const strokeWidth = 28; // Keep lines thick
+      const cornerSize = 100;
+      const strokeWidth = 28;
 
       const corners = [
-        {top: 0, left: 0, rotate: '0deg'}, // top-left
-        {top: 0, left: qrboxWidth - cornerSize, rotate: '90deg'}, // top-right
-        {top: qrboxHeight - cornerSize, left: 0, rotate: '270deg'}, // bottom-left
-        {top: qrboxHeight - cornerSize, left: qrboxWidth - cornerSize, rotate: '180deg'} // bottom-right
+        {top: 0, left: 0, rotate: '0deg'},
+        {top: 0, left: qrboxWidth - cornerSize, rotate: '90deg'},
+        {top: qrboxHeight - cornerSize, left: 0, rotate: '270deg'},
+        {top: qrboxHeight - cornerSize, left: qrboxWidth - cornerSize, rotate: '180deg'}
       ];
 
-      // Create a container for the corners
-      let frameContainer = document.createElement('div');
+      const frameContainer = document.createElement('div');
       frameContainer.style.position = 'absolute';
       frameContainer.style.width = qrboxWidth + 'px';
       frameContainer.style.height = qrboxHeight + 'px';
@@ -114,7 +108,7 @@
       frameContainer.style.pointerEvents = 'none';
 
       corners.forEach(corner => {
-        let div = document.createElement('div');
+        const div = document.createElement('div');
         div.className = 'qr-corner';
         div.style.width = cornerSize + 'px';
         div.style.height = cornerSize + 'px';
@@ -130,28 +124,30 @@
       });
       reader.appendChild(frameContainer);
 
-      // Responsive: update frame size and corners on resize
       window.addEventListener('resize', () => {
-        let { width, height } = getQrBoxSize();
+        const { width, height } = getQrBoxSize();
         frameContainer.style.width = width + 'px';
         frameContainer.style.height = height + 'px';
         frameContainer.style.top = `calc(50% - ${height/2}px)`;
         frameContainer.style.left = `calc(50% - ${width/2}px)`;
-        // Update corners
-        const positions = [
+
+        const updatedCorners = [
           {top: 0, left: 0, rotate: '0deg'},
           {top: 0, left: width - cornerSize, rotate: '90deg'},
           {top: height - cornerSize, left: 0, rotate: '270deg'},
           {top: height - cornerSize, left: width - cornerSize, rotate: '180deg'}
         ];
+
         Array.from(frameContainer.children).forEach((div, i) => {
-          div.style.width = cornerSize + 'px';
-          div.style.height = cornerSize + 'px';
-          div.style.top = positions[i].top + 'px';
-          div.style.left = positions[i].left + 'px';
-          div.style.transform = `rotate(${positions[i].rotate})`;
+          div.style.top = updatedCorners[i].top + 'px';
+          div.style.left = updatedCorners[i].left + 'px';
+          div.style.transform = `rotate(${updatedCorners[i].rotate})`;
         });
       });
+
+    }).catch(err => {
+      console.error("Camera start failed:", err);
+      alert("⚠️ Failed to access camera. Please allow permission or try another browser.");
     });
   </script>
 </body>
