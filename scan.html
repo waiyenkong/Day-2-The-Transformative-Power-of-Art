@@ -27,21 +27,41 @@
   <div id="output"></div>
 
   <script src="https://unpkg.com/@zxing/browser@latest"></script>
-  <script>
-    const codeReader = new ZXing.BrowserQRCodeReader();
-    const videoElement = document.getElementById('video');
-    const outputElement = document.getElementById('output');
+<script>
+  function onScanSuccess(decodedText) {
+    console.log("✅ Scanned text:", decodedText);
+    alert("Scanned: " + decodedText); // temporary alert for testing
+    window.location.href = decodedText;
+  }
 
-    codeReader.decodeFromVideoDevice(
-      { facingMode: "user" }, // Use front-facing camera
-      videoElement,
-      (result, err) => {
-        if (result) {
-          outputElement.textContent = 'Scanned: ' + result.getText();
-          window.location.href = result.getText(); // Redirect to prefilled form link
-        }
-      }
-    );
-  </script>
+  function onScanError(errorMessage) {
+    console.warn("❌ Scan error:", errorMessage); // won't show on successful scans
+  }
+
+  function getQrBoxSize() {
+    let size = Math.floor(Math.min(window.innerWidth, window.innerHeight) * 0.8);
+    return { width: size, height: size };
+  }
+
+  let { width: qrboxWidth, height: qrboxHeight } = getQrBoxSize();
+  const html5QrCode = new Html5Qrcode("reader");
+
+  html5QrCode.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: qrboxWidth, height: qrboxHeight }
+    },
+    onScanSuccess,
+    onScanError
+  ).then(() => {
+    console.log("✅ Camera started successfully.");
+    // ... (your existing corner frame code)
+  }).catch(err => {
+    console.error("🚨 Camera start error:", err);
+    alert("Camera access failed. Please check permissions or use another browser.");
+  });
+</script>
+
 </body>
 </html>
