@@ -1,54 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scan QR to Check In</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
-    html, body {
+    body {
+      font-family: sans-serif;
+      text-align: center;
       margin: 0;
       padding: 0;
       background: #000;
-      font-family: sans-serif;
-      text-align: center;
     }
 
     h2 {
       color: #fff;
-      margin: 16px 0;
+      margin-top: 20px;
     }
 
     #reader-container {
-      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: calc(100vh - 60px);
       width: 100vw;
-      max-width: 500px;
-      aspect-ratio: 1;
-      margin: 0 auto;
+      position: relative;
     }
 
     #reader {
-      width: 100%;
-      height: 100%;
-      border-radius: 8px;
+      width: 90vw;
+      max-width: 500px;
+      aspect-ratio: 1;
+      position: relative;
     }
 
-    .overlay-corners {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    .corner {
+    .qr-corner {
       position: absolute;
       width: 40px;
       height: 40px;
-      box-sizing: border-box;
       border: 4px solid white;
+      box-sizing: border-box;
     }
 
     .top-left {
@@ -80,6 +71,7 @@
     }
 
     #reader video {
+      border-radius: 8px;
       width: 100% !important;
       height: 100% !important;
       object-fit: cover;
@@ -88,29 +80,32 @@
 </head>
 <body>
   <h2>Scan your QR code</h2>
-  <!-- 925 -->
+  <!-- 935 -->
   <div id="reader-container">
-    <div id="reader"></div>
-    <div class="overlay-corners">
-      <div class="corner top-left"></div>
-      <div class="corner top-right"></div>
-      <div class="corner bottom-left"></div>
-      <div class="corner bottom-right"></div>
+    <div id="reader">
+      <div class="qr-corner top-left"></div>
+      <div class="qr-corner top-right"></div>
+      <div class="qr-corner bottom-left"></div>
+      <div class="qr-corner bottom-right"></div>
     </div>
   </div>
 
   <script>
+    function getResponsiveQrBox() {
+      const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+      return { width: Math.floor(size), height: Math.floor(size) };
+    }
+
     function onScanSuccess(decodedText) {
       window.location.href = decodedText;
     }
 
     const html5QrCode = new Html5Qrcode("reader");
-
     html5QrCode.start(
       { facingMode: "environment" },
       {
-        fps: 10
-        // No qrbox to avoid html5-qrcode's default frame
+        fps: 10,
+        qrbox: getResponsiveQrBox()
       },
       onScanSuccess
     );
